@@ -11,6 +11,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import useLoading from "../../hooks/useLoading";
+import { Link } from "react-router";
 
 const SignupForm = () => {
   const { formData, handleOnChange, setFormData } = useForm(
@@ -103,6 +104,9 @@ const SignupForm = () => {
             </Button>
           </div>
         </form>
+        <div>
+            <p >Already have account? <Link to="/login" className="cursor:pointer text-gray-500 hover:text-gray-700">Sign In</Link> </p>
+        </div>
       </div>
       {/* button */}
     </div>
