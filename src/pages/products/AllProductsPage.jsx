@@ -1,8 +1,6 @@
 import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
-
 import AllProductList from "../../components/Products/AllProductList";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,7 +8,6 @@ import {
   BreadcrumbSeparator,
 } from "../../components/ui/breadcrumb";
 import FilterSidebar from "../../components/sidebar/FilterSideBar";
-
 import { useSelector } from "react-redux";
 import { Collapse } from "../../components/collapsible/Collapse";
 
@@ -88,7 +85,7 @@ const AllProductsPage = () => {
     setFilters((prev) => {
       let filters = { ...prev };
       if (name === "price") {
-        ((filters.minPrice = value[0]), (filters.maxPrice = value[1]));
+        (filters.minPrice = value[0]), (filters.maxPrice = value[1]);
       }
       if (name === "colors") {
         const prevColors = Array.isArray(prev?.colors) ? prev.colors : [];

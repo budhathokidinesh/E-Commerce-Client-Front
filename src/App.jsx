@@ -16,6 +16,7 @@ import DefaultLayout from "./components/layout/DefaultLayout";
 
 import ProductDetailPage from "./pages/products/ProductDetailPage";
 import AllProductsPage from "./pages/products/AllProductsPage";
+import CartPage from "./pages/cart/CartPage";
 
 function App() {
   return (
@@ -43,6 +44,8 @@ function App() {
           <Route path="/activate-user" element={<ActiveUserPage />} />
           <Route path="/allproducts" element={<AllProductsPage />} />
           <Route path="/product-detail/:slug" element={<ProductDetailPage />} />
+          <Route path="/activate-user" element={<ActiveUserPage />} />
+          <Route path="/cart" element={<CartPage />} />
         </Route>
         {/* private Routes */}
       </Routes>

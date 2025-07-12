@@ -1,73 +1,57 @@
-import { useState } from "react";
-import {
-  Minus,
-  Plus,
-  Trash2,
-  ShoppingBag,
-  Heart,
-  ChevronDown,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Minus, Plus, Trash2, ShoppingBag, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-
-const initialCartItems = [
-  {
-    id: "1",
-    name: "Air Jordan 1 Retro High OG 'Chicago'",
-    color: "Varsity Red-Black",
-    size: "10",
-    price: 170,
-    quantity: 1,
-    image:
-      "https://res.cloudinary.com/diq0wn1bm/image/upload/v1750907066/as7ozkc57kbgkajxgexw.webp",
-    inStock: true,
-    category: "Men's Shoes",
-  },
-  {
-    id: "2",
-    name: "Nike Air Force 1 '07",
-    color: "White",
-    size: "9.5",
-    price: 90,
-    quantity: 2,
-    image:
-      "https://res.cloudinary.com/diq0wn1bm/image/upload/v1750921184/hmw7uyf1m8ibxe7graom.avif",
-    inStock: true,
-    category: "Men's Shoes",
-  },
-  {
-    id: "3",
-    name: "Nike Dunk Low Retro",
-    color: "Black-White",
-    size: "11",
-    DiscountedPrice: 100,
-    price: 120,
-    quantity: 1,
-    image:
-      "https://res.cloudinary.com/diq0wn1bm/image/upload/v1750905075/isnr7kjznjgotqlbtwhp.avif",
-    inStock: true,
-    category: "Men's Shoes",
-  },
-];
+import {
+  getCartFromLocalStorage,
+  updateLocalCartItemQuantity,
+  removeFromLocalCart,
+} from "../../utils/cartLocalStorage";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const navigate = useNavigate();
+  const [cartItems, setCartItems] = useState([]);
   const [promoCode, setPromoCode] = useState("");
   const [isPromoApplied, setIsPromoApplied] = useState(false);
 
-  const updateQuantity = (id, newQuantity) => {
+  // Load cart items from localStorage on component mount
+  useEffect(() => {
+    const loadCartItems = () => {
+      const items = getCartFromLocalStorage();
+      setCartItems(items);
+    };
+
+    loadCartItems();
+  }, []);
+
+  const updateQuantity = (itemId, newQuantity) => {
     if (newQuantity < 1) return;
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
+
+    try {
+      const updatedCart = updateLocalCartItemQuantity(itemId, newQuantity);
+      setCartItems(updatedCart);
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      toast.error("Failed to update quantity");
+    }
+  };
+
+  const removeItem = (itemId) => {
+    try {
+      const updatedCart = removeFromLocalCart(itemId);
+      setCartItems(updatedCart);
+      toast.success("Item removed from cart");
+    } catch (error) {
+      console.error("Error removing item:", error);
+      toast.error("Failed to remove item");
+    }
   };
 
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + (item.DiscountedPrice ?? item.price) * item.quantity,
+    (sum, item) => sum + (item.discountPrice || item.price) * item.quantity,
     0
   );
   const discount = isPromoApplied ? subtotal * 0.1 : 0;
@@ -90,6 +74,7 @@ const CartPage = () => {
             <Button
               size="lg"
               className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-full"
+              onClick={() => navigate("/allProducts")}
             >
               Get Started
             </Button>
@@ -115,14 +100,14 @@ const CartPage = () => {
           <div className="lg:col-span-8">
             <div className="space-y-8">
               {cartItems.map((item, index) => (
-                <div key={item.id}>
+                <div key={item.id || item._id}>
                   <div className="flex gap-6">
                     {/* Product Image */}
                     <div className="flex-shrink-0">
                       <div className="w-36 h-36 bg-gray-50 rounded-lg overflow-hidden">
                         <img
-                          src={item.image || "/placeholder.svg"}
-                          alt={item.name}
+                          src={item.thumbnail || "/placeholder.svg"}
+                          alt={item.product_title}
                           width={144}
                           height={144}
                           className="w-full h-full object-cover"
@@ -135,23 +120,28 @@ const CartPage = () => {
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1 pr-4">
                           <h3 className="text-base font-medium text-black leading-tight mb-1">
-                            {item.name}
+                            {item.product_title}
                           </h3>
                           <p className="text-gray-500 text-sm mb-1">
-                            {item.category}
+                            {item.mainCategory}
                           </p>
                           <p className="text-gray-500 text-sm mb-3">
-                            {item.color}
+                            Color:{" "}
+                            <span className="font-medium text-black">
+                              {item.color}
+                            </span>
                           </p>
 
+                          {/* size */}
                           <div className="flex items-center gap-6 text-sm text-gray-500 mb-4">
                             <div className="flex items-center gap-2">
                               <span>Size</span>
                               <span className="font-medium text-black">
                                 {item.size}
                               </span>
-                              <ChevronDown className="h-3 w-3" />
                             </div>
+
+                            {/* quantity */}
                             <div className="flex items-center gap-2">
                               <span>Quantity</span>
                               <div className="flex items-center gap-2">
@@ -159,7 +149,10 @@ const CartPage = () => {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() =>
-                                    updateQuantity(item.id, item.quantity - 1)
+                                    updateQuantity(
+                                      item.id || item._id,
+                                      item.quantity - 1
+                                    )
                                   }
                                   disabled={item.quantity <= 1}
                                   className="h-6 w-6 p-0 hover:bg-gray-100"
@@ -173,7 +166,10 @@ const CartPage = () => {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() =>
-                                    updateQuantity(item.id, item.quantity + 1)
+                                    updateQuantity(
+                                      item.id || item._id,
+                                      item.quantity + 1
+                                    )
                                   }
                                   className="h-6 w-6 p-0 hover:bg-gray-100"
                                 >
@@ -184,6 +180,7 @@ const CartPage = () => {
                           </div>
                         </div>
 
+                        {/* delete & wishlist button */}
                         <div className="text-right">
                           <div className="flex items-center gap-3 mb-2">
                             <Button
@@ -197,21 +194,23 @@ const CartPage = () => {
                               variant="ghost"
                               size="sm"
                               className="p-1 hover:bg-gray-100"
+                              onClick={() => removeItem(item.id || item._id)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                           <div>
-                            {item.DiscountedPrice ? (
+                            {item.discountPrice &&
+                            item.discountPrice < item.price ? (
                               <>
                                 <p className="text-sm text-gray-400 line-through mb-1">
-                                  ${item.price.toFixed(2)}
+                                  ${(item.price * item.quantity).toFixed(2)}
                                 </p>
                                 <p className="font-medium text-black">
                                   $
-                                  {(
-                                    item.DiscountedPrice * item.quantity
-                                  ).toFixed(2)}
+                                  {(item.discountPrice * item.quantity).toFixed(
+                                    2
+                                  )}
                                 </p>
                               </>
                             ) : (
@@ -292,6 +291,12 @@ const CartPage = () => {
                   <Button
                     variant="outline"
                     className="border-gray-200 hover:border-black bg-transparent"
+                    onClick={() => {
+                      if (promoCode.trim()) {
+                        setIsPromoApplied(true);
+                        toast.success("Promo code applied successfully!");
+                      }
+                    }}
                   >
                     Apply
                   </Button>

@@ -14,6 +14,9 @@ import {
   Check,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
+import { fetchProductAction } from "../../features/product/productAction";
+import { addToLocalCart } from "../../utils/cartLocalStorage";
+import { toast } from "react-toastify";
 
 const ProductDetailPage = () => {
   const dispatch = useDispatch();
@@ -24,21 +27,42 @@ const ProductDetailPage = () => {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const { slug } = useParams();
-  console.log(slug);
 
   const { products } = useSelector((state) => state.productInfo);
-
   const product = products.find((product) => product.slug === slug) || {};
+  console.log("product", product);
 
   // fetch all products when component mounts
   useEffect(() => {
     if (!products || products.length === 0) {
-      // dispatch(getAllProductsAction());
+      dispatch(fetchProductAction());
     }
   }, [dispatch, products]);
 
+  //function to handle add to cart
+  const handleAddToCart = (product) => {
+    try {
+      const cartObj = {
+        product_id: product?._id,
+        product_title: product?.title,
+        color: selectedColor,
+        size: selectedSize,
+        discountPrice: product?.discountPrice,
+        price: product?.price,
+        quantity: quantity,
+        thumbnail: product?.thumbnail,
+        mainCategory: product?.mainCategory,
+      };
+      const updatedCart = addToLocalCart(cartObj);
+      toast.success(`${product.title} is added to cart`);
+    } catch (error) {
+      console.error("Error adding item to local cart:", error);
+      return [];
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen  mt-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Product Images */}
@@ -58,8 +82,6 @@ const ProductDetailPage = () => {
                   <img
                     src={image || "/placeholder.svg?height=80&width=80"}
                     alt={`${product.title} view ${index + 1}`}
-                    width={80}
-                    height={80}
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -84,31 +106,29 @@ const ProductDetailPage = () => {
           </div>
 
           {/* Product Information */}
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge
-                  variant="ghost"
-                  className="text-xs font-medium bg-yellow-500"
-                >
-                  {product.brand}
-                </Badge>
-              </div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-                {product.title}
-              </h1>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-gray-300 text-gray-300"
-                    />
-                  ))}
-                  <span className="ml-2 text-sm text-gray-600">
-                    No reviews yet
-                  </span>
-                </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge
+                variant="ghost"
+                className="text-xs font-medium bg-yellow-500"
+              >
+                {product.brand}
+              </Badge>
+            </div>
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              {product.title}
+            </h1>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="w-4 h-4 fill-gray-300 text-gray-300"
+                  />
+                ))}
+                <span className="ml-2 text-sm text-gray-600">
+                  No reviews yet
+                </span>
               </div>
             </div>
 
@@ -234,7 +254,10 @@ const ProductDetailPage = () => {
               <Button
                 size="lg"
                 className="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-full disabled:bg-gray-400 disabled:cursor-not-allowed"
-                disabled={!selectedSize || product.stock === 0}
+                disabled={
+                  !selectedSize || !selectedColor || product.stock === 0
+                }
+                onClick={() => handleAddToCart(product)}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
@@ -251,31 +274,6 @@ const ProductDetailPage = () => {
                 />
                 Wishlist
               </Button>
-            </div>
-
-            {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
-              <div className="flex items-center gap-3 p-4 bg-white rounded-lg">
-                <Truck className="w-5 h-5 text-gray-600" />
-                <div>
-                  <p className="text-sm font-medium">Free Shipping</p>
-                  <p className="text-xs text-gray-500">On orders over $100</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-white rounded-lg">
-                <RotateCcw className="w-5 h-5 text-gray-600" />
-                <div>
-                  <p className="text-sm font-medium">Easy Returns</p>
-                  <p className="text-xs text-gray-500">30-day return policy</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-white rounded-lg">
-                <Shield className="w-5 h-5 text-gray-600" />
-                <div>
-                  <p className="text-sm font-medium">Warranty</p>
-                  <p className="text-xs text-gray-500">1-year warranty</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
