@@ -1,127 +1,155 @@
-import { Link } from "react-router-dom";
-import ProductCard from "../customCard/ProductCard";
+import { useNavigate } from "react-router-dom";
+import { Heart, Star } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
-import { useMemo } from "react";
 import { useSelector } from "react-redux";
-const API = "http://localhost:8001/api/v1";
-// const products = [
-//   {
-//     _id: "1",
-//     title: "Wireless Headphones",
-//     price: 59.99,
-//     tag: "Electronics",
-//     slug: "wireless-headphones",
-//     isRecommended: true,
-//     image:
-//       "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQe7DRegkOTgtUs_HKBpv64sda6NujGjmgWsnOAhNHQQZUAaOnuDaQXZ5CQcMNronPYa1dgXErkUhgd3jVBrSaHUsZdGdv0Kf3Gu7yfvgA57kTSNFLEULXR6Q",
-//   },
-//   {
-//     _id: "2",
-//     title: "Eco-Friendly Water Bottle",
-//     price: 19.99,
-//     tag: "Lifestyle",
-//     slug: "eco-friendly-water-bottle",
-//     isRecommended: false,
-//     image:
-//       "https://waterdrop.com.au/cdn/shop/files/WTD_AO25_performance_1000_blue_full_front_1500x.png?v=1730621607",
-//   },
-//   {
-//     _id: "3",
-//     title: "Running Shoes",
-//     price: 89.99,
-//     tag: "Sportswear",
-//     slug: "running-shoes",
-//     isRecommended: true,
-//     image:
-//       "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSqb0qgqbbzYygkyEZiBkGMAN2pAMQZhWWBNdBKSTpaXfo9EInO7LSE1zgBgZaB8ufvm_Kij2XIW6h5-fN9Yhox5HwBBUPXf6vAIXCW4HLVQBvAOE-G67pr9g",
-//   },
-//   {
-//     _id: "4",
-//     title: "Minimalist Backpack",
-//     price: 49.99,
-//     tag: "Accessories",
-//     slug: "minimalist-backpack",
-//     isRecommended: true,
-//     image:
-//       "https://compacttrip.com/cdn/shop/files/Business-Travel-Backpack-USB-Charging-Laptop-Protection-grey.png?v=1745315085&width=990",
-//   },
-//   {
-//     _id: "5",
-//     title: "LED Desk Lamp",
-//     price: 34.99,
-//     tag: "Home & Office",
-//     slug: "led-desk-lamp",
-//     isRecommended: false,
-//     image:
-//       "https://mobie.com.au/cdn/shop/products/04_fe581e85-06e5-4b2e-9fa7-14d10521fb06.jpg?v=1701786894&width=1200",
-//   },
-//   {
-//     _id: "6",
-//     title: "Bluetooth Speaker",
-//     price: 29.99,
-//     tag: "Electronics",
-//     slug: "bluetooth-speaker",
-//     isRecommended: true,
-//     image:
-//       "https://m.media-amazon.com/images/I/719nhErutkL.__AC_SX300_SY300_QL70_ML2_.jpg",
-//   },
-//   {
-//     _id: "7",
-//     title: "Cotton T-Shirt",
-//     price: 14.99,
-//     tag: "Apparel",
-//     slug: "cotton-t-shirt",
-//     isRecommended: true,
-//     image:
-//       "https://img.kwcdn.com/thumbnail/s/add48657a0f6265362681574d946797c_75fd6d8ffbfe.jpeg?imageView2/2/w/1300/q/80/format/webp",
-//   },
-//   {
-//     _id: "8",
-//     title: "Notebook Set",
-//     price: 9.99,
-//     tag: "Stationery",
-//     slug: "notebook-set",
-//     isRecommended: true,
-//     image:
-//       " https://m.media-amazon.com/images/I/71MBMsR+B4L._AC_SY300_SX300_.jpg",
-//   },
-// ];
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+
+import reviewStar from "../../utils/reviewStar";
+import Rating from "../star/Rating";
 
 const RecommendationProducts = () => {
   const { products } = useSelector((state) => state.productInfo);
+  const navigate = useNavigate();
+  const [wishlist, setWishlist] = useState([]);
 
- 
+  const calculateDiscountPercentage = (price, discountPrice) => {
+    return price !== discountPrice
+      ? Math.round(((price - discountPrice) / price) * 100)
+      : 0;
+  };
 
-  
+  //function to check if product is wishlisted
+  const isProductWishlisted = (productId) => {
+    return wishlist.includes(productId);
+  };
+
+  //function to toggle wishlist
+  const toggleWishlist = (id) => {
+    setWishlist((prev) =>
+      prev.includes(id)
+        ? prev.filter((wishlist) => wishlist !== id)
+        : [...prev, id]
+    );
+  };
 
   return (
     <section className="px-8 mb-8 mt-8">
-      <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">
+      <h2 className="text-2xl font-bold text-gray-800 text-center mb-8">
         Recommended Products
       </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {products?.map((product) => (
-          <Card key={product._id} className="w-full h-[300px] p-0">
-            <CardContent className="p-0 flex flex-col h-full">
-              <Link to={"/product-detail/" + product.slug}>
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  className="w-full h-47 object-cover rounded-t-lg"
-                />
-              </Link>
-              <div className="p-2 flex flex-col flex-grow">
-                <div className="text-sm font-semibold">{product.title}</div>
-                <div className="text-gray-500 text-sm">${product.price}</div>
-                <Button className="mt-2 w-full cursor-pointer">
-                  Add to Cart
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {products?.map((product) => {
+          const discountPercentage = calculateDiscountPercentage(
+            product.price,
+            product.discountPrice
+          );
+          const { fullstarrating, halfstar, emptystars } = reviewStar(
+            product.reviews
+          );
+          const isWishlisted = isProductWishlisted(product._id);
+
+          return (
+            <Card
+              key={product._id}
+              className="group hover:shadow-lg transition-all duration-300 bg-white m-0 p-0"
+              onClick={() => {
+                navigate(`/product-detail/${product.slug}`);
+              }}
+            >
+              <CardContent className="p-0 m-0">
+                {/* Product Image */}
+                <div
+                  className="relative aspect-square bg-gray-100 overflow-hidden rounded-t-lg"
+                  style={{ margin: 0, padding: 0, lineHeight: 0 }}
+                >
+                  <img
+                    src={product.thumbnail || "/placeholder.svg"}
+                    alt={product.title}
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {discountPercentage > 0 && product.discountPrice > 0 && (
+                    <Badge className="absolute top-3 left-3 bg-red-500 hover:bg-red-600">
+                      -{discountPercentage}%
+                    </Badge>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="absolute top-3 right-3 w-8 h-8 p-0 bg-white/80 hover:bg-white"
+                    onClick={() => toggleWishlist(product._id)}
+                  >
+                    <Heart
+                      className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+                    />
+                  </Button>
+                </div>
+
+                {/* Product Info */}
+                <div className="p-4">
+                  <div className="mb-2">
+                    <Badge variant="secondary" className="text-xs mb-2">
+                      {product.brand}
+                    </Badge>
+                    <h3 className="font-semibold text-lg mb-1 line-clamp-1">
+                      {product.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                      {product.description}
+                    </p>
+                  </div>
+
+                  {/* Rating */}
+                  <div className="flex items-center gap-1 mb-3">
+                    <Rating
+                      fullstarrating={fullstarrating}
+                      halfstar={halfstar}
+                      emptystars={emptystars}
+                    ></Rating>
+                    <span className="text-sm text-gray-600">
+                      {product.rating}
+                    </span>
+                  </div>
+
+                  {/* Price */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold text-gray-900">
+                        $
+                        {product.discountPrice > 0
+                          ? product.discountPrice
+                          : product.price}
+                      </span>
+                      {product.price !== product.discountPrice &&
+                        product.discountPrice > 0 && (
+                          <span className="text-sm text-gray-500 line-through">
+                            ${product.price}
+                          </span>
+                        )}
+                    </div>
+                    {product.stock === 0 ? (
+                      <Badge
+                        variant="outline"
+                        className="text-xs text-red-600 border-red-200"
+                      >
+                        Out of stock
+                      </Badge>
+                    ) : product.stock <= 10 ? (
+                      <Badge
+                        variant="outline"
+                        className="text-xs text-orange-600 border-orange-200"
+                      >
+                        Only {product.stock} left
+                      </Badge>
+                    ) : null}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </section>
   );

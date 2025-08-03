@@ -11,6 +11,7 @@ export const getUserAction = () => async (dispatch) => {
     return toast.error(response.message || "Something went wrong!");
   }
   // If the response is successful, dispatch the setUser action with the user data
+  console.log("User payload from API:", response.payload);
   dispatch(setUser(response.payload));
 
   return response;

@@ -7,15 +7,15 @@ const DefaultLayout = () => {
   return (
     <div>
       {/* Navabar */}
+      <Header />
 
-      <Header></Header>
       {/* main body */}
       <main>
         <Outlet />
       </main>
 
       {/* footer */}
-      {/* <Footer></Footer> */}
+      <Footer />
     </div>
   );
 };

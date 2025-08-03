@@ -7,6 +7,7 @@ export const buildQuery = ({
   sale,
   colors,
   brand,
+  productPath,
 }) => {
   let queries = qs.stringify({
     mainCategory,
@@ -15,6 +16,7 @@ export const buildQuery = ({
     sale,
     colors,
     brand,
+    productPath,
   });
 
   return queries;

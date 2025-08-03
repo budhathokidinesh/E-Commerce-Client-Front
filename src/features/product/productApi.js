@@ -11,12 +11,21 @@ export const getAllProductApi = () => {
 
   return axiosApiCall(obj);
 };
+
 // /filterProduct?categories=men&colors=White,Grey
 export const getAllFilterProductApi = (query) => {
   const obj = {
-    url: `${productApiEndPoint}/filterProduct?${query}`,
+    url: `${productApiEndPoint}/filterProduct${query}`,
     method: "get",
   };
-  console.log(obj.url);
+
+  return axiosApiCall(obj);
+};
+export const getSingleProductApi = (slug) => {
+  const obj = {
+    url: `${productApiEndPoint}/bySlug/${slug}`,
+    method: "get",
+  };
+
   return axiosApiCall(obj);
 };

@@ -1,78 +1,52 @@
-import { useState } from "react";
-import {
-  Minus,
-  Plus,
-  Trash2,
-  ShoppingBag,
-  Heart,
-  ChevronDown,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Minus, Plus, Trash2, ShoppingBag, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-
-const initialCartItems = [
-  {
-    id: "1",
-    name: "Air Jordan 1 Retro High OG 'Chicago'",
-    color: "Varsity Red-Black",
-    size: "10",
-    price: 170,
-    quantity: 1,
-    image:
-      "https://res.cloudinary.com/diq0wn1bm/image/upload/v1750907066/as7ozkc57kbgkajxgexw.webp",
-    inStock: true,
-    category: "Men's Shoes",
-  },
-  {
-    id: "2",
-    name: "Nike Air Force 1 '07",
-    color: "White",
-    size: "9.5",
-    price: 90,
-    quantity: 2,
-    image:
-      "https://res.cloudinary.com/diq0wn1bm/image/upload/v1750921184/hmw7uyf1m8ibxe7graom.avif",
-    inStock: true,
-    category: "Men's Shoes",
-  },
-  {
-    id: "3",
-    name: "Nike Dunk Low Retro",
-    color: "Black-White",
-    size: "11",
-    DiscountedPrice: 100,
-    price: 120,
-    quantity: 1,
-    image:
-      "https://res.cloudinary.com/diq0wn1bm/image/upload/v1750905075/isnr7kjznjgotqlbtwhp.avif",
-    inStock: true,
-    category: "Men's Shoes",
-  },
-];
+import { toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  deleteCartItem,
+  fetchCartFromStorage,
+  updateCartItemQuantity,
+  updatePricingOnPromoChange,
+} from "../../features/cart/cartAction";
+import { setPromoApplied } from "../../features/cart/cartSlice";
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState(initialCartItems);
-  const [promoCode, setPromoCode] = useState("");
-  const [isPromoApplied, setIsPromoApplied] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const updateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
+  const {
+    cartItems,
+    isPromoApplied,
+    promoCode,
+    subtotal,
+    discount,
+    shipping,
+    total,
+  } = useSelector((state) => state.cartInfo);
+
+  const { user } = useSelector((state) => state.user);
+  console.log("user", user);
+
+  // Load cart items from localStorage on component mount
+  useEffect(() => {
+    dispatch(fetchCartFromStorage());
+  }, [dispatch]);
+
+  // delete item from cart
+  const handleDelete = (itemId) => {
+    dispatch(deleteCartItem(itemId));
+    toast.success("Item removed from cart");
   };
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + (item.DiscountedPrice ?? item.price) * item.quantity,
-    0
-  );
-  const discount = isPromoApplied ? subtotal * 0.1 : 0;
-  const shipping = subtotal > 150 ? 0 : 7.99;
-  const total = subtotal - discount + shipping;
+  //update quantity
+  const handleUpdateQuantity = (itemId, newQuantity) => {
+    if (newQuantity < 1) return; // Prevent going below 1
+    dispatch(updateCartItemQuantity(itemId, newQuantity));
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -88,10 +62,10 @@ const CartPage = () => {
               get started?
             </p>
             <Button
-              size="lg"
-              className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-full"
+              asChild
+              className="bg-black hover:bg-gray-800 text-white px-8 py-6 rounded-full"
             >
-              Get Started
+              <Link to="/allProducts"> Get Started</Link>
             </Button>
           </div>
         </div>
@@ -115,14 +89,14 @@ const CartPage = () => {
           <div className="lg:col-span-8">
             <div className="space-y-8">
               {cartItems.map((item, index) => (
-                <div key={item.id}>
-                  <div className="flex gap-6">
+                <div key={item.id || item._id}>
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     {/* Product Image */}
-                    <div className="flex-shrink-0">
+                    <div className="flex-shrink-0 mx-auto sm:mx-0">
                       <div className="w-36 h-36 bg-gray-50 rounded-lg overflow-hidden">
                         <img
-                          src={item.image || "/placeholder.svg"}
-                          alt={item.name}
+                          src={item.thumbnail || "/placeholder.svg"}
+                          alt={item.product_title}
                           width={144}
                           height={144}
                           className="w-full h-full object-cover"
@@ -130,96 +104,98 @@ const CartPage = () => {
                       </div>
                     </div>
 
-                    {/* Product Details */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1 pr-4">
-                          <h3 className="text-base font-medium text-black leading-tight mb-1">
-                            {item.name}
-                          </h3>
-                          <p className="text-gray-500 text-sm mb-1">
-                            {item.category}
-                          </p>
-                          <p className="text-gray-500 text-sm mb-3">
-                            {item.color}
-                          </p>
-
-                          <div className="flex items-center gap-6 text-sm text-gray-500 mb-4">
-                            <div className="flex items-center gap-2">
-                              <span>Size</span>
-                              <span className="font-medium text-black">
-                                {item.size}
-                              </span>
-                              <ChevronDown className="h-3 w-3" />
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span>Quantity</span>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    updateQuantity(item.id, item.quantity - 1)
-                                  }
-                                  disabled={item.quantity <= 1}
-                                  className="h-6 w-6 p-0 hover:bg-gray-100"
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <span className="font-medium text-black w-6 text-center">
-                                  {item.quantity}
-                                </span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    updateQuantity(item.id, item.quantity + 1)
-                                  }
-                                  className="h-6 w-6 p-0 hover:bg-gray-100"
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
+                    {/* Product Details & Actions */}
+                    <div className="flex-1 min-w-0 flex flex-col gap-2">
+                      {/* Product Title */}
+                      <h3 className="text-base font-medium text-black leading-tight mb-1">
+                        {item.product_title}
+                      </h3>
+                      {/* mainCategory */}
+                      <p className="text-gray-500 text-sm mb-0">
+                        {item.mainCategory}
+                      </p>
+                      {/* color */}
+                      <p className="text-gray-500 text-sm mb-0">
+                        Color:{" "}
+                        <span className="font-medium text-black">
+                          {item.color}
+                        </span>
+                      </p>
+                      {/* size */}
+                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-0">
+                        <span>Size</span>
+                        <span className="font-medium text-black">
+                          {item.size}
+                        </span>
+                      </div>
+                      {/* quantity */}
+                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-0">
+                        <span>Quantity</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              handleUpdateQuantity(item._id, item.quantity - 1)
+                            }
+                            disabled={item.quantity <= 1}
+                            className="h-6 w-6 p-0 hover:bg-gray-100"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="font-medium text-black w-6 text-center">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              handleUpdateQuantity(item._id, item.quantity + 1)
+                            }
+                            className="h-6 w-6 p-0 hover:bg-gray-100"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
                         </div>
-
-                        <div className="text-right">
-                          <div className="flex items-center gap-3 mb-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="p-1 hover:bg-gray-100"
-                            >
-                              <Heart className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="p-1 hover:bg-gray-100"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <div>
-                            {item.DiscountedPrice ? (
-                              <>
-                                <p className="text-sm text-gray-400 line-through mb-1">
-                                  ${item.price.toFixed(2)}
-                                </p>
-                                <p className="font-medium text-black">
-                                  $
-                                  {(
-                                    item.DiscountedPrice * item.quantity
-                                  ).toFixed(2)}
-                                </p>
-                              </>
-                            ) : (
-                              <p className="font-medium text-black">
+                      </div>
+                      {/* delete & wishlist button and price - stack on mobile, row on desktop */}
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
+                        <div className="flex items-center gap-3 order-2 sm:order-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="p-1 hover:bg-gray-100"
+                          >
+                            <Heart className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="p-1 hover:bg-gray-100"
+                            onClick={() => handleDelete(item.id || item._id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="order-1 sm:order-2 text-left sm:text-right">
+                          {item.discountPrice &&
+                          item.discountPrice < item.price ? (
+                            <>
+                              <p className="text-sm text-gray-400 line-through mb-1">
                                 ${(item.price * item.quantity).toFixed(2)}
                               </p>
-                            )}
-                          </div>
+                              <p className="font-medium text-black">
+                                $
+                                {(item.discountPrice * item.quantity).toFixed(
+                                  2
+                                )}
+                              </p>
+                            </>
+                          ) : (
+                            <p className="font-medium text-black">
+                              ${(item.price * item.quantity).toFixed(2)}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -286,12 +262,28 @@ const CartPage = () => {
                   <Input
                     placeholder="Promo Code"
                     value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
+                    onChange={(e) =>
+                      dispatch(
+                        setPromoApplied({
+                          isPromoApplied,
+                          promoCode: e.target.value,
+                        })
+                      )
+                    }
                     className="flex-1 border-gray-200 focus:border-black"
                   />
                   <Button
                     variant="outline"
                     className="border-gray-200 hover:border-black bg-transparent"
+                    onClick={() => {
+                      if (promoCode.trim()) {
+                        dispatch(
+                          setPromoApplied({ isPromoApplied: true, promoCode })
+                        );
+                        dispatch(updatePricingOnPromoChange());
+                        toast.success("Promo code applied successfully!");
+                      }
+                    }}
                   >
                     Apply
                   </Button>
@@ -305,8 +297,14 @@ const CartPage = () => {
 
               <div className="space-y-3">
                 <Button
-                  className="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-full text-base font-medium"
-                  size="lg"
+                  className="w-full bg-black hover:bg-gray-800 text-white py-6 px-6 rounded-full text-base font-medium"
+                  onClick={() => {
+                    if (user && user._id) {
+                      navigate("/checkout");
+                    } else {
+                      navigate("/checkout/option");
+                    }
+                  }}
                 >
                   Checkout
                 </Button>

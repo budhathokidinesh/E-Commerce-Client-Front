@@ -1,15 +1,31 @@
-import { getAllFilterProductApi, getAllProductApi } from "./productApi";
-import { setFilteredProduct, setProducts } from "./productSlice";
+import {
+  getAllFilterProductApi,
+  getAllProductApi,
+  getSingleProductApi,
+} from "./productApi";
+import {
+  setFilteredProduct,
+  setProducts,
+  setSingleProduct,
+} from "./productSlice.js";
 
-export const fetchProductAction = () => async (disptach) => {
+export const fetchProductAction = () => async (dispatch) => {
   const productInfo = await getAllProductApi();
   const { payload, status } = productInfo;
-  status === "success" && disptach(setProducts(payload));
+  status === "success" && dispatch(setProducts(payload));
 };
-export const fetchFilterProductAction = (query) => async (disptach) => {
+export const fetchFilterProductAction = (query) => async (dispatch) => {
   const productInfo = await getAllFilterProductApi(query);
 
   const { payload, status } = productInfo;
 
-  status === "success" && disptach(setFilteredProduct(payload));
+  status === "success" && dispatch(setFilteredProduct(payload));
+};
+export const singleProductAction = (slug) => async (dispatch) => {
+  console.log(slug);
+  const productInfo = await getSingleProductApi(slug);
+
+  const { payload, status } = productInfo;
+
+  status === "success" && dispatch(setSingleProduct(payload));
 };
