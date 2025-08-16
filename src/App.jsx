@@ -25,7 +25,6 @@ import ProtectedRoute from "./components/helper/ProtectedRoute.jsx";
 import OrderTrackingPage from "./pages/order/OrderTrackingPage.jsx";
 import SupportPage from "./pages/support/SupportPage.jsx";
 
-
 function App() {
   return (
     <>
@@ -77,7 +76,7 @@ function App() {
           <Route path="/wishlist" element={<WishlistPage />} />
         </Route>
       </Routes>
-      <ToastContainer position="top-center" autoClose={2000} />
+      <ToastContainer position="top-right" autoClose={2000} />
     </>
   );
 }

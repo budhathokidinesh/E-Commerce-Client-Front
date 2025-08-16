@@ -10,15 +10,13 @@ import {
   getWishlistDetails,
   setUser,
   setWishlist,
-  toggleWishlist,
+  // toggleWishlist,
 } from "./userSlice";
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 
-import { setUser } from "./userSlice";
 import axios from "axios";
 
 const apiBaseUrl = import.meta.env.VITE_APP_API_BASE_URL;
-
 
 //Redux Thunk
 // GET USER ACTION
