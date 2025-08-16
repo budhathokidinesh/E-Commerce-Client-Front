@@ -116,7 +116,7 @@ const ReviewPage = () => {
           {hideReview ? (
             <>
               <Dialog>
-                {user._id ? (
+                {user?._id ? (
                   <DialogTrigger className="underline underline-offset-4">
                     Write a Review
                   </DialogTrigger>

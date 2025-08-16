@@ -10,7 +10,7 @@ import {
 import FilterSidebar from "../../components/sidebar/FilterSideBar";
 import { useSelector, useDispatch } from "react-redux";
 import { Collapse } from "../../components/collapsible/Collapse";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { setFiltered } from "../../features/filters/filterSlice";
 import { fetchFilteredProducts } from "../../features/filters/fetchFilteredProducts";
 import { useSearchParams } from "react-router-dom";
@@ -174,19 +174,20 @@ const AllProductsPage = () => {
   return (
     <div className="mx-auto px-4">
       <div className="bg-gray-100 p-4 mb-6">
-        <Breadcrumb className="flex flex-wrap items-center space-x-1 text-sm">
+        <Breadcrumb className="flex flex-wrap items-center space-x-1 text-sm ">
           <BreadcrumbItem>
-            <BreadcrumbLink
-              href="/"
-              className="text-foreground hover:text-primary"
-            >
-              Home
+            <BreadcrumbLink>
+              <Link to="/" className="text-foreground hover:text-primary">
+                Home
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator className="mx-2">{">"}</BreadcrumbSeparator>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/allproducts" className="text-foreground">
-              All Products
+            <BreadcrumbLink>
+              <Link to="/allproducts" className="text-foreground">
+                All Products
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </Breadcrumb>

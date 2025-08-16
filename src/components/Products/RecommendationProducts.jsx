@@ -2,37 +2,52 @@ import { useNavigate } from "react-router-dom";
 import { Heart, Star } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
-import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
 import reviewStar from "../../utils/reviewStar";
 import Rating from "../star/Rating";
+import {
+  fetchWishlistAction,
+  getUserAction,
+  toggleWishlistAction,
+} from "../../features/user/userAction";
+import { toast } from "react-toastify";
 
 const RecommendationProducts = () => {
   const { products } = useSelector((state) => state.productInfo);
   const navigate = useNavigate();
-  const [wishlist, setWishlist] = useState([]);
+  const dispatch = useDispatch();
+  const { user, wishlistProducts } = useSelector((state) => state.user);
+
+  const isLoggedIn = !!user && !!user._id;
+
+  // const [wishlist, setWishlist] = useState([]);
 
   const calculateDiscountPercentage = (price, discountPrice) => {
     return price !== discountPrice
       ? Math.round(((price - discountPrice) / price) * 100)
       : 0;
   };
-
-  //function to check if product is wishlisted
-  const isProductWishlisted = (productId) => {
-    return wishlist.includes(productId);
+  const handleToggleWishlist = (productId) => {
+    if (!isLoggedIn) {
+      toast.error("You must be Logged In to use the wishlist");
+      return;
+    }
+    dispatch(toggleWishlistAction(productId));
   };
+  useEffect(() => {
+    //To  persist login when page refreshed
+    dispatch(getUserAction());
+  }, [dispatch]);
 
-  //function to toggle wishlist
-  const toggleWishlist = (id) => {
-    setWishlist((prev) =>
-      prev.includes(id)
-        ? prev.filter((wishlist) => wishlist !== id)
-        : [...prev, id]
-    );
-  };
+  // Fetch wishlist only after user is loaded
+  useEffect(() => {
+    if (user?._id) {
+      dispatch(fetchWishlistAction());
+    }
+  }, [dispatch, user?._id]);
 
   return (
     <section className="px-8 mb-8 mt-8">
@@ -49,7 +64,6 @@ const RecommendationProducts = () => {
           const { fullstarrating, halfstar, emptystars } = reviewStar(
             product.reviews
           );
-          const isWishlisted = isProductWishlisted(product._id);
 
           return (
             <Card
@@ -79,10 +93,13 @@ const RecommendationProducts = () => {
                     size="sm"
                     variant="outline"
                     className="absolute top-3 right-3 w-8 h-8 p-0 bg-white/80 hover:bg-white"
-                    onClick={() => toggleWishlist(product._id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleWishlist(product._id);
+                    }}
                   >
                     <Heart
-                      className={`w-4 h-4 ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`}
+                      className={`w-4 h-4 ${wishlistProducts.includes(product._id) ? "fill-red-500 text-red-500" : "text-gray-600"}`}
                     />
                   </Button>
                 </div>

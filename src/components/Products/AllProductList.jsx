@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,14 +7,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { fetchFilterProductAction } from "../../features/product/productAction";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
 
-import { toggleWishlistAction } from "../../features/user/userAction";
+import {
+  fetchWishlistAction,
+  getUserAction,
+  toggleWishlistAction,
+} from "../../features/user/userAction";
 import { toast } from "react-toastify";
 
 import reviewStar from "../../utils/reviewStar.js";
 import { FaRegStar, FaRegStarHalfStroke, FaStar } from "react-icons/fa6";
-
 
 const AllProductList = ({ setProductList, productList }) => {
   const dispatch = useDispatch();
@@ -35,6 +37,11 @@ const AllProductList = ({ setProductList, productList }) => {
     }
     dispatch(toggleWishlistAction(productId));
   };
+
+  useEffect(() => {
+    //To  persist login when page refreshed
+    dispatch(getUserAction());
+  }, [dispatch]);
 
   // fetch all products when component mounts
   useEffect(() => {
@@ -87,14 +94,12 @@ const AllProductList = ({ setProductList, productList }) => {
                 product.discountPrice
               );
 
-
               const { fullstarrating, halfstar, emptystars } = reviewStar(
                 product.reviews
               );
 
               console.log(fullstarrating, halfstar, emptystars);
-              const isWishlisted = isProductWishlisted(productList._id);
-
+              // const isWishlisted = isProductWishlisted(productList._id);
 
               return (
                 <Card

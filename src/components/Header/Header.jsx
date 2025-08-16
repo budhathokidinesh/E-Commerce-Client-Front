@@ -28,9 +28,8 @@ const Header = () => {
   const { user, wishlistProducts } = useSelector((state) => state.user);
   console.log(user, wishlistProducts);
 
-  const wishlistItemsCount =
-    wishlistProducts?.length || user?.wishList?.length || 0;
-  console.log(wishlistItemsCount);
+  const wishlistItemsCount = wishlistProducts?.length || 0;
+  console.log("Number of wishlist items : ", wishlistItemsCount);
 
   useEffect(() => {
     ref.current &&
@@ -78,10 +77,12 @@ const Header = () => {
           <li className="relative">
             <Link to="/wishlist">
               <FaRegHeart className="cursor-pointer" />
-              {wishlistItemsCount > 0 && (
+              {wishlistItemsCount > 0 ? (
                 <span className="absolute -top-3.5 -right-3.5 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {wishlistItemsCount}
                 </span>
+              ) : (
+                ""
               )}
             </Link>
           </li>
@@ -96,7 +97,8 @@ const Header = () => {
             </Link>
           </li>
 
-          {!user._id ? (
+          {/* {user && user._id ? */}
+          {!user?._id ? (
             <li>
               <Link to="/login">
                 <button className="text-sm text-black bg-green-400 px-1 py-1 rounded hover:bg-amber-50">
