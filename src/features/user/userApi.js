@@ -43,6 +43,14 @@ export const getUser = () => {
 //UPDATE USER ROLE  | FOR ADMIN
 
 // UPDATE USER | PATCH | PRIVATE
+export const updateUser = (email) => {
+  return axiosApiCall({
+    method: "put",
+    url: `${USER_API_URL}/user-info`,
+    data: { email },
+    isPrivate: true,
+  });
+};
 
 //LOGOUT USER | POST | PRIVATE
 export const logoutUser = (email) => {

@@ -28,16 +28,19 @@ const DropDown = ({ logout }) => {
           {firstLetter}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-40 mr-4" align="start">
+      <DropdownMenuContent className="w-45 mr-4" align="start">
         <DropdownMenuLabel className="font-bold">
           {user?.fName}'s Account
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <IoIosSettings className="text-blue-700" />
-            Profile Settings
+          <DropdownMenuItem asChild>
+            <Link to="/profileSettings">
+              <IoIosSettings className="text-blue-700" />
+              Profile Settings
+            </Link>
           </DropdownMenuItem>
+
           <DropdownMenuItem asChild>
             <Link to="/orderHistory">
               <FaListAlt className="text-blue-700" /> My Orders

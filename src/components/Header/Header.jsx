@@ -77,7 +77,7 @@ const Header = () => {
           <li className="relative">
             <Link to="/wishlist">
               <FaRegHeart className="cursor-pointer" />
-              {wishlistItemsCount > 0 ? (
+              {wishlistItemsCount > 0 && user?._id ? (
                 <span className="absolute -top-3.5 -right-3.5 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {wishlistItemsCount}
                 </span>

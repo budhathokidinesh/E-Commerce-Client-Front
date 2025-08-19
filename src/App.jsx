@@ -24,6 +24,7 @@ import UserOrderPage from "./pages/order/UserOrderPage.jsx";
 import ProtectedRoute from "./components/helper/ProtectedRoute.jsx";
 import OrderTrackingPage from "./pages/order/OrderTrackingPage.jsx";
 import SupportPage from "./pages/support/SupportPage.jsx";
+// import ProfileSettingPage from "./pages/Auth/ProfileSettingPage.jsx";
 
 function App() {
   return (
@@ -44,6 +45,15 @@ function App() {
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/order-success" element={<SuccessPage />} />
           <Route path="/review" element={<ReviewPage />} />
+          {/* <Route
+            path="/profileSettings"
+            element={
+              <ProtectedRoute>
+                {" "}
+                <ProfileSettingPage />
+              </ProtectedRoute>
+            }
+          /> */}
 
           <Route
             path="/orderHistory"
@@ -76,7 +86,7 @@ function App() {
           <Route path="/wishlist" element={<WishlistPage />} />
         </Route>
       </Routes>
-      <ToastContainer position="top-right" autoClose={2000} />
+      <ToastContainer position="bottom-right" autoClose={2000} />
     </>
   );
 }
