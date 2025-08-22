@@ -28,7 +28,7 @@ jobs:
         run: yarn build
 
       - name: Deploy to S3
-        uses: aws-actions/s3-sync@v2
+        uses: aws-actions/s3-sync@v2.1.1
         with:
           bucket: dinesh-frontend-bucket
           region: ${{ secrets.AWS_REGION }}
