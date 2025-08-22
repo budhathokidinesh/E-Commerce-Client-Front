@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetctCategoriesAction } from "../../features/categories/categoriesAction";
 import { fetchProductAction } from "../../features/product/productAction";
 import { logoutUserAction } from "../../features/user/userAction";
-import DropDown from "../../utils/dropDown";
+import DropDown from "../../../src/utils/DropDown";
 import SearchBar from "../Search/SearchBar";
 
 const Header = () => {
