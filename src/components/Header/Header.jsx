@@ -26,10 +26,8 @@ const Header = () => {
   );
 
   const { user, wishlistProducts } = useSelector((state) => state.user);
-  console.log(user, wishlistProducts);
 
   const wishlistItemsCount = wishlistProducts?.length || 0;
-  console.log("Number of wishlist items : ", wishlistItemsCount);
 
   useEffect(() => {
     ref.current &&

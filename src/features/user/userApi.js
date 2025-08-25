@@ -43,11 +43,11 @@ export const getUser = () => {
 //UPDATE USER ROLE  | FOR ADMIN
 
 // UPDATE USER | PATCH | PRIVATE
-export const updateUser = (email) => {
+export const updateUser = (userData) => {
   return axiosApiCall({
     method: "put",
     url: `${USER_API_URL}/user-info`,
-    data: { email },
+    data: userData,
     isPrivate: true,
   });
 };
@@ -72,7 +72,7 @@ export const forgetPasswordEmail = (formData) => {
 };
 
 // CHANGE PASSWORD | /change-password | PATCH
-export const changePassword = (data) => {
+export const resetPasswordApi = (data) => {
   return axiosApiCall({
     method: "patch",
     url: `${USER_API_URL}/reset-password`,
@@ -94,6 +94,49 @@ export const getWishlistProductsApi = () => {
   return axiosApiCall({
     method: "get",
     url: `${USER_API_URL}/wishlist`,
+    isPrivate: true,
+  });
+};
+export const changePasswordApi = (data) => {
+  return axiosApiCall({
+    method: "put",
+    url: `${USER_API_URL}/change-password`,
+    data,
+    isPrivate: true,
+  });
+};
+
+export const deleteUserApi = async () => {
+  return axiosApiCall({
+    method: "delete",
+    url: `${USER_API_URL}/user-info`,
+
+    isPrivate: true,
+  });
+};
+
+export const addAddressApi = (data) => {
+  return axiosApiCall({
+    method: "post",
+    url: `${USER_API_URL}/user-info/address`,
+    data,
+    isPrivate: true,
+  });
+};
+
+export const editAddressApi = (data) => {
+  return axiosApiCall({
+    method: "put",
+    url: `${USER_API_URL}/user-info/address`,
+    data,
+    isPrivate: true,
+  });
+};
+
+export const deleteAddressApi = (addressId) => {
+  return axiosApiCall({
+    method: "delete",
+    url: `${USER_API_URL}/user-info/address/${addressId}`,
     isPrivate: true,
   });
 };
