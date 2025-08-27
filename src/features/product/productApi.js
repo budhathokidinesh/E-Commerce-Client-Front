@@ -1,6 +1,7 @@
 import { axiosApiCall } from "../../axios/axiosApiCall";
 
 const apiBaseUrl = import.meta.env.VITE_APP_API_BASE_URL;
+const Recomnedation_URL = `${import.meta.env.VITE_APP_API_BASE_URL}/api/v1/recomendation`;
 
 const productApiEndPoint = `${apiBaseUrl}/api/v1/product`;
 export const getAllProductApi = () => {
@@ -28,4 +29,15 @@ export const getSingleProductApi = (slug) => {
   };
 
   return axiosApiCall(obj);
+};
+
+export const getRecomendedProducts = (user = null) => {
+  return axiosApiCall({
+    method: "get",
+    url: Recomnedation_URL,
+    params: {
+      userId: user,
+      interactionId: localStorage.getItem("interactionId"),
+    },
+  });
 };

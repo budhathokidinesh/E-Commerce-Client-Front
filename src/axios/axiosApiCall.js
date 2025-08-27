@@ -11,9 +11,10 @@ export const axiosApiCall = async (axiosParams) => {
     data,
     isPrivate = false,
     useRefreshToken = false,
+    params,
     // autoStoreToken = false,
   } = axiosParams;
-
+  console.log(params);
   // Determine the token based on whether to use refresh token or access token
   const token = useRefreshToken
     ? localStorage.getItem("refreshJWT")
@@ -34,6 +35,7 @@ export const axiosApiCall = async (axiosParams) => {
       url,
       data,
       headers,
+      params,
     });
     // if (autoStoreToken && response?.data?.token) {
     //   sessionStorage.setItem("accessJWT", response.data.token);

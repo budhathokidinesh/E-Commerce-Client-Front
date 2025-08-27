@@ -9,6 +9,8 @@ import Rating from "../star/Rating";
 import reviewStar from "../../utils/reviewStar";
 import { toast } from "react-toastify";
 import { toggleWishlistAction } from "../../features/user/userAction";
+import userInteractionObj from "../../utils/interactionId";
+import { postUserIntersction } from "../../features/userInteractions/userInteractionApi";
 
 const LatestProducts = () => {
   const { products } = useSelector((state) => state.productInfo);
@@ -77,6 +79,13 @@ const LatestProducts = () => {
               key={product._id}
               className="group hover:shadow-lg transition-all duration-300 bg-white m-0 p-0"
               onClick={() => {
+                const recomedationObj = userInteractionObj({
+                  productId: product._id,
+                  userId: user._id,
+                  type: "view",
+                });
+
+                postUserIntersction(recomedationObj);
                 navigate(`/product-detail/${product.slug}`);
               }}
             >

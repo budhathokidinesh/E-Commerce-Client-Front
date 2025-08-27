@@ -1,11 +1,13 @@
 import {
   getAllFilterProductApi,
   getAllProductApi,
+  getRecomendedProducts,
   getSingleProductApi,
 } from "./productApi";
 import {
   setFilteredProduct,
   setProducts,
+  setRecomendedProducts,
   setSingleProduct,
 } from "./productSlice.js";
 
@@ -28,4 +30,11 @@ export const singleProductAction = (slug) => async (dispatch) => {
   const { payload, status } = productInfo;
 
   status === "success" && dispatch(setSingleProduct(payload));
+};
+export const recomendedProductAction = (userId) => async (dispatch) => {
+  console.log(userId);
+  const productInfo = await getRecomendedProducts(userId);
+  const { status, payload } = productInfo;
+
+  status === "success" && dispatch(setRecomendedProducts(payload));
 };

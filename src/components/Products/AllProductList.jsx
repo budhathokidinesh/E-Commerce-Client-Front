@@ -17,6 +17,8 @@ import { toast } from "react-toastify";
 
 import reviewStar from "../../utils/reviewStar.js";
 import { FaRegStar, FaRegStarHalfStroke, FaStar } from "react-icons/fa6";
+import userInteractionObj from "../../utils/interactionId.js";
+import { postUserIntersction } from "../../features/userInteractions/userInteractionApi.js";
 
 const AllProductList = ({ setProductList, productList }) => {
   const dispatch = useDispatch();
@@ -108,7 +110,16 @@ const AllProductList = ({ setProductList, productList }) => {
                   key={product._id}
                   className="group hover:shadow-lg transition-all duration-300 bg-white m-0 p-0"
                   onClick={() => {
+                    const recomedationObj = userInteractionObj({
+                      productId: product._id,
+                      userId: user?._id,
+                      type: "view",
+                    });
+
+                    postUserIntersction(recomedationObj);
+                    console.log("navigate from product list ");
                     navigate(`/product-detail/${product.slug}`);
+                    // post recomendation
                   }}
                 >
                   <CardContent className="p-0 m-0">
@@ -228,7 +239,7 @@ const AllProductList = ({ setProductList, productList }) => {
           </div>
         ) : (
           <div className="text-center font-semibold text-2xl text-gray-600 py-10">
-            Loading......
+          <h1>No Product found</h1>
           </div>
         )}
       </div>

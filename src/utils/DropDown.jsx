@@ -22,10 +22,18 @@ const DropDown = ({ logout }) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          className="rounded-full w-6 h-6 flex items-center justify-center bg-blue-600 text-white font-bold p-0"
+          className="rounded-full w-6 h-6 flex items-center justify-center bg-blue-600 text-white font-bold p-0 overflow-hidden"
           variant="ghost"
         >
-          {firstLetter}
+          {user?.profilePicture ? (
+            <img
+              src={user.profilePicture}
+              alt={user?.fName}
+              className="w-full h-full object-cover rounded-full"
+            />
+          ) : (
+            <span>{firstLetter}</span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40 mr-4" align="start">
@@ -34,9 +42,10 @@ const DropDown = ({ logout }) => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <IoIosSettings className="text-blue-700" />
-            Profile Settings
+          <DropdownMenuItem asChild>
+            <Link to="/profileSettings">
+              <IoIosSettings className="text-blue-700" /> Profile Settings
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link to="/orderHistory">

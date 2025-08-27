@@ -14,9 +14,11 @@ import {
   toggleWishlistAction,
 } from "../../features/user/userAction";
 import { toast } from "react-toastify";
+import userInteractionObj from "../../utils/interactionId";
+import { postUserIntersction } from "../../features/userInteractions/userInteractionApi";
 
 const RecommendationProducts = () => {
-  const { products } = useSelector((state) => state.productInfo);
+  const { recomedateProducts } = useSelector((state) => state.productInfo);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user, wishlistProducts } = useSelector((state) => state.user);
@@ -30,10 +32,6 @@ const RecommendationProducts = () => {
     }
     dispatch(toggleWishlistAction(productId));
   };
-  // useEffect(() => {
-  //   //To  persist login when page refreshed
-  //   dispatch(getUserAction());
-  // }, [dispatch]);
 
   const calculateDiscountPercentage = (price, discountPrice) => {
     return price !== discountPrice
@@ -41,19 +39,6 @@ const RecommendationProducts = () => {
       : 0;
   };
 
-  //function to check if product is wishlisted
-  // const isProductWishlisted = (productId) => {
-  //   return wishlist.includes(productId);
-  // };
-
-  // //function to toggle wishlist
-  // const toggleWishlist = (id) => {
-  //   setWishlist((prev) =>
-  //     prev.includes(id)
-  //       ? prev.filter((wishlist) => wishlist !== id)
-  //       : [...prev, id]
-  //   );
-  // };
   useEffect(() => {
     if (user?._id) {
       dispatch(fetchWishlistAction());
@@ -66,7 +51,7 @@ const RecommendationProducts = () => {
       </h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {products?.map((product) => {
+        {recomedateProducts?.map((product) => {
           const discountPercentage = calculateDiscountPercentage(
             product.price,
             product.discountPrice
@@ -74,13 +59,19 @@ const RecommendationProducts = () => {
           const { fullstarrating, halfstar, emptystars } = reviewStar(
             product.reviews
           );
-          // const isWishlisted = isProductWishlisted(product._id);
 
           return (
             <Card
               key={product._id}
               className="group hover:shadow-lg transition-all duration-300 bg-white m-0 p-0"
               onClick={() => {
+                const recomedationObj = userInteractionObj({
+                  productId: product?._id,
+                  userId: user?._id,
+                  type: "view",
+                });
+
+                postUserIntersction(recomedationObj);
                 navigate(`/product-detail/${product.slug}`);
               }}
             >

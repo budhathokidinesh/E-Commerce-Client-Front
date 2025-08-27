@@ -1,8 +1,14 @@
 import {
+  addAddressApi,
+  changePasswordApi,
+  deleteAddressApi,
+  deleteUserApi,
+  editAddressApi,
   getUser,
   getWishlistProductsApi,
   logoutUser,
   toggleWishlistApi,
+  updateUser,
 } from "./userApi";
 import { toast } from "react-toastify";
 
@@ -10,6 +16,7 @@ import {
   getWishlistDetails,
   setUser,
   setWishlist,
+  resetUser,
   // toggleWishlist,
 } from "./userSlice";
 // import { useSelector } from "react-redux";
@@ -158,4 +165,84 @@ export const fetchWishlistAction = () => async (dispatch) => {
     console.log("Error fetching wishlist:", error);
     toast.error("Failed to fetch wishlist");
   }
+};
+
+export const updateUserAction = (userData) => async (dispatch) => {
+  try {
+    const response = await updateUser(userData);
+
+    if (response?.status === "success") {
+      toast.success("Profile Updated..!");
+
+      // Update Redux state immediately with the data we know
+      dispatch(setUser(response.payload));
+
+      // Then fetch fresh data from server to ensure consistency
+      dispatch(getUserAction());
+
+      return response;
+    } else {
+      toast.error(response?.message || "Update failed ..!");
+      return response;
+    }
+  } catch (error) {
+    console.error("Update user error:", error);
+    toast.error("Failed to update profile");
+    return { status: "error", message: error.message };
+  }
+};
+
+export const changePasswordAction = (formData) => async () => {
+  try {
+    const response = await changePasswordApi(formData);
+    if (response?.status === "error") {
+      toast.error(response.message || "Password update failed");
+      return response;
+    }
+    toast.success("Password updated successfully");
+    return response;
+  } catch (error) {
+    toast.error("Something went wrong! Couldn't update password");
+    console.log(error);
+    return { status: "error" };
+  }
+};
+
+export const deleteUserAction = () => async (dispatch) => {
+  const response = await deleteUserApi();
+  if (response?.status === "success") {
+    toast.success("Your account has been deleted successfully!");
+    dispatch(resetUser()); //Clear redux user
+  } else {
+    toast.error(response.message || "Failed to delete account");
+  }
+  return response;
+};
+
+export const addAddressAction = (formData) => async (dispatch) => {
+  const res = addAddressApi(formData);
+  if (res.status === "error") {
+    toast.error(res.message || "Failed to add address");
+    return res;
+  }
+  toast.success("Address added successfully");
+  dispatch(setUser(res.payload)); // Update user in redux
+};
+export const editAddressAction = (formData) => async (dispatch) => {
+  const res = editAddressApi(formData);
+  if (res.status === "error") {
+    toast.error(res.message || "Failed to edit address");
+    return res;
+  }
+  toast.success("Address edited successfully");
+  dispatch(setUser(res.payload)); // Update user in redux
+};
+export const deleteAddressAction = (addressId) => async (dispatch) => {
+  const res = deleteAddressApi(addressId);
+  if (res.status === "error") {
+    toast.error(res.message || "Failed to delete address");
+    return res;
+  }
+  toast.success("Address deleted successfully");
+  dispatch(setUser(res.payload)); // Update user in redux
 };

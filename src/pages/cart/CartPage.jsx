@@ -302,7 +302,7 @@ const CartPage = () => {
                     if (user && user._id) {
                       navigate("/checkout");
                     } else {
-                      navigate("/checkout/option");
+                      navigate("/checkout-option");
                     }
                   }}
                 >

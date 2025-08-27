@@ -9,12 +9,13 @@ export const HomePage = () => {
       <CustomCarousel />
 
       <div className="mb-10">
-        <RecommendationProducts />
+     
+        <LatestProducts />
         <Separator />
       </div>
 
       <div className="mb-10">
-        <LatestProducts />
+       <RecommendationProducts />
       </div>
     </div>
   );

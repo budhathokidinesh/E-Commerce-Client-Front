@@ -17,7 +17,7 @@ import { initialresetPasswordFormData } from "../../config/formCongif";
 import { toast } from "react-toastify";
 import useLoading from "../../hooks/useLoading";
 import { Link, useSearchParams } from "react-router-dom";
-import { changePassword } from "../../features/user/userApi";
+import { resetPasswordApi } from "../../features/user/userApi";
 import LoadingSpinner from "../helper/LoadingSpinner";
 
 const ChangePasswordForm = () => {
@@ -42,7 +42,7 @@ const ChangePasswordForm = () => {
     startLoading();
     try {
       // api call
-      const response = await changePassword({ formData, token, email });
+      const response = await resetPasswordApi({ formData, token, email });
 
       if (response?.status === "success") {
         toast.success(response.message || "Password reset successfullly.");

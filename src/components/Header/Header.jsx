@@ -23,17 +23,14 @@ const Header = () => {
   const cartItemsCount = useSelector((state) =>
     state.cartInfo?.cartItems?.reduce((sum, item) => sum + item.quantity, 0)
   );
-
   const { user, wishlistProducts } = useSelector((state) => state.user);
-  console.log(user, wishlistProducts);
-
   const wishlistItemsCount = wishlistProducts?.length || 0;
-  console.log("Number of wishlist items : ", wishlistItemsCount);
 
   useEffect(() => {
     ref.current &&
       dispatch(fetctCategoriesAction()) &&
       dispatch(fetchProductAction());
+
     ref.current = false;
   }, [dispatch]);
 
