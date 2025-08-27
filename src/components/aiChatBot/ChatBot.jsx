@@ -1,4 +1,4 @@
-const apiBaseUrl = import.meta.env.VITE_APP_API_BASE_URL;
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { IoMdSend } from "react-icons/io";
 import {
@@ -13,11 +13,16 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+
+const apiBaseUrl = import.meta.env.VITE_APP_API_BASE_URL;
 
 const ChatBot = ({ isOpen, onOpenChange, user }) => {
-  //This is for initial message
   const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const scrollRef = useRef(null);
+
   const getInitialBotMessage = () => ({
     from: "bot",
     text: `Hello ${user?.fName || ""}! I am AI assistant for Group Project. How can I help you today?`,
@@ -26,15 +31,11 @@ const ChatBot = ({ isOpen, onOpenChange, user }) => {
       minute: "2-digit",
     }),
   });
+
   useEffect(() => {
     if (user) setMessages([getInitialBotMessage()]);
   }, [user]);
 
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const scrollRef = useRef(null);
-
-  // Send message function
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -42,14 +43,19 @@ const ChatBot = ({ isOpen, onOpenChange, user }) => {
       hour: "2-digit",
       minute: "2-digit",
     });
-
     const newMessages = [
       ...messages,
       { from: "user", text: input, time: currentTime },
     ];
+
     setMessages(newMessages);
     setInput("");
     setLoading(true);
+    setTyping(true);
+
+    // Add a temporary "typing" message
+    const botTypingMessage = { from: "bot", text: "typing...", time: "" };
+    setMessages((prev) => [...prev, botTypingMessage]);
 
     try {
       const res = await fetch(`${apiBaseUrl}/api/v1/user/chat`, {
@@ -64,13 +70,15 @@ const ChatBot = ({ isOpen, onOpenChange, user }) => {
         }),
       });
 
+      const data = await res.json();
       const botTime = new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       });
-      const data = await res.json();
+
+      // Replace "typing..." with real response
       setMessages((prev) => [
-        ...prev,
+        ...prev.slice(0, -1),
         { from: "bot", text: data.message, time: botTime },
       ]);
     } catch (err) {
@@ -80,15 +88,16 @@ const ChatBot = ({ isOpen, onOpenChange, user }) => {
         minute: "2-digit",
       });
       setMessages((prev) => [
-        ...prev,
+        ...prev.slice(0, -1),
         { from: "bot", text: "Error contacting AI.", time: botTime },
       ]);
     } finally {
       setLoading(false);
+      setTyping(false);
     }
   };
 
-  // Scroll to bottom on new message
+  // Scroll to bottom
   useLayoutEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
@@ -98,7 +107,6 @@ const ChatBot = ({ isOpen, onOpenChange, user }) => {
     }
   }, [messages]);
 
-  // Clear chat function
   const clearChat = () => setMessages([getInitialBotMessage()]);
 
   return (
@@ -123,7 +131,9 @@ const ChatBot = ({ isOpen, onOpenChange, user }) => {
               {messages.map((msg, idx) => (
                 <div key={idx} className="flex flex-col">
                   <div
-                    className={`flex items-start gap-2 ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+                    className={`flex items-start gap-2 ${
+                      msg.from === "user" ? "justify-end" : "justify-start"
+                    }`}
                   >
                     {msg.from === "bot" && (
                       <Avatar>
@@ -141,11 +151,13 @@ const ChatBot = ({ isOpen, onOpenChange, user }) => {
                           : "bg-gray-200 text-gray-900"
                       }`}
                     >
-                      {msg.text}
+                      {msg.text === "typing..." ? <TypingDots /> : msg.text}
                     </div>
                   </div>
                   <div
-                    className={`text-xs text-gray-500 mt-1 ${msg.from === "user" ? "text-right" : "text-left"}`}
+                    className={`text-xs text-gray-500 mt-1 ${
+                      msg.from === "user" ? "text-right" : "text-left"
+                    }`}
                   >
                     {msg.time}
                   </div>
@@ -175,7 +187,7 @@ const ChatBot = ({ isOpen, onOpenChange, user }) => {
             disabled={loading}
             className="absolute right-2 bottom-2 p-2 rounded-full bg-transparent hover:bg-gray-200 text-blue-600"
           >
-            {loading ? "..." : <IoMdSend size={20} />}
+            <IoMdSend size={20} />
           </Button>
         </div>
 
@@ -194,3 +206,14 @@ const ChatBot = ({ isOpen, onOpenChange, user }) => {
 };
 
 export default ChatBot;
+
+// TypingDots component
+const TypingDots = () => (
+  <span className="inline-block w-20 h-2">
+    <p class="text-gray-700 font-medium">
+      Thinking<span class="animate-pulse">.</span>
+      <span class="animate-pulse [animation-delay:200ms]">.</span>
+      <span class="animate-pulse [animation-delay:400ms]">.</span>
+    </p>
+  </span>
+);

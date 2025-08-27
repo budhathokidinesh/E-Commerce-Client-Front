@@ -54,8 +54,8 @@ function App() {
           <Route path="/allproducts/*" element={<AllProductsPage />} />
           <Route path="/product-detail/:slug" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout-option" element={<CheckoutOptionPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/checkout/option" element={<CheckoutOptionPage />} />
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/order-success" element={<SuccessPage />} />
           <Route path="/review" element={<ReviewPage />} />
