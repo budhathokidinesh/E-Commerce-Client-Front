@@ -4,8 +4,15 @@ import { Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const CheckOutSummary = () => {
-  const { cartItems, isPromoApplied, subtotal, discount, shipping, total } =
-    useSelector((state) => state.cartInfo);
+  const {
+    cartItems,
+    isPromoApplied,
+    subtotal,
+    discount,
+    shipping,
+    total,
+    promoCode,
+  } = useSelector((state) => state.cartInfo);
 
   return (
     <>
@@ -22,7 +29,7 @@ const CheckOutSummary = () => {
             </div>
             {isPromoApplied && (
               <div className="flex justify-between items-center">
-                <span className="text-gray-900">Discount (NIKE10)</span>
+                <span className="text-gray-900">Discount {promoCode}</span>
                 <span className="text-green-600">-${discount.toFixed(2)}</span>
               </div>
             )}

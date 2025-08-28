@@ -46,7 +46,7 @@ const Header = () => {
       <div className="container  h-20 flex-wrap p-2  flex justify-between items-center md:p-6 lg:justify-between gap-10  ">
         {/* brand */}
         <Link to="/" className="text-2xl font-bold text-slate-100">
-          Group Store
+          FitAura
         </Link>
         {/* navbar */}
         <div className="lg:flex hidden">

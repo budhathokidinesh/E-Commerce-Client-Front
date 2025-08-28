@@ -41,18 +41,12 @@ export const axiosApiCall = async (axiosParams) => {
     //   sessionStorage.setItem("accessJWT", response.data.token);
     // }
     return response.data;
-    // return response;
   } catch (error) {
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Something went wrong";
+    // handle error
+    // If access token is expired, try to get new access token using the refresh token
+    // and use that new access token to make api call
 
-    toast.error(message);
-
-    return {
-      status: error?.response?.status || "error",
-      message,
-    };
+    console.error(error);
+    throw error;
   }
 };

@@ -3,12 +3,13 @@ import {
   getCartFromLocalStorage,
   saveCartToLocalStorage,
 } from "../../utils/cartLocalStorage";
-import { setCarts, updatePricing } from "./cartSlice";
+import { setCarts, setPromoApplied, updatePricing } from "./cartSlice";
+import { checkCoupon } from "./couponApi";
+import { toast } from "react-toastify";
 
 //Add item to cart
 export const addItemToCart =
   (product, selectedColor, selectedSize, quantity) => (dispatch, getState) => {
-    // console.log("Redux state:", getState());
     // Get current cart from Redux
     const reduxCartItems = getState().cartInfo.cartItems;
 
@@ -33,24 +34,27 @@ export const addItemToCart =
         item.color === cartPayload.color &&
         item.size === cartPayload.size
     );
+
     if (existingItemIndex !== -1) {
       updatedCartItems = reduxCartItems.map((item, index) =>
         index === existingItemIndex
           ? { ...item, quantity: item.quantity + cartPayload.quantity }
           : item
       );
-      //   console.log("🛒 Cart updated (existing item):", updatedCartItems);
     } else {
       updatedCartItems = [...reduxCartItems, cartPayload];
-      //   console.log("🛒 Cart updated (new item):", updatedCartItems);
     }
 
     dispatch(setCarts(updatedCartItems));
     saveCartToLocalStorage(updatedCartItems);
 
-    // Recalculate pricing
-    const { isPromoApplied } = getState().cartInfo;
-    const pricing = calculatePricing(updatedCartItems, isPromoApplied);
+    // Recalculate pricing with current coupon data
+    const { isPromoApplied, appliedCoupon } = getState().cartInfo;
+    const pricing = calculatePricing(
+      updatedCartItems,
+      isPromoApplied,
+      appliedCoupon
+    );
     dispatch(updatePricing(pricing));
   };
 
@@ -63,16 +67,20 @@ export const deleteCartItem = (itemId) => (dispatch, getState) => {
   dispatch(setCarts(updatedCartItems));
   saveCartToLocalStorage(updatedCartItems);
 
-  // Recalculate pricing
-  const { isPromoApplied } = getState().cartInfo;
-  const pricing = calculatePricing(updatedCartItems, isPromoApplied);
+  // Recalculate pricing with current coupon data
+  const { isPromoApplied, appliedCoupon } = getState().cartInfo;
+  const pricing = calculatePricing(
+    updatedCartItems,
+    isPromoApplied,
+    appliedCoupon
+  );
   dispatch(updatePricing(pricing));
 };
 
 // Update pricing when promo is applied
 export const updatePricingOnPromoChange = () => (dispatch, getState) => {
-  const { cartItems, isPromoApplied } = getState().cartInfo;
-  const pricing = calculatePricing(cartItems, isPromoApplied);
+  const { cartItems, isPromoApplied, appliedCoupon } = getState().cartInfo;
+  const pricing = calculatePricing(cartItems, isPromoApplied, appliedCoupon);
   dispatch(updatePricing(pricing));
 };
 
@@ -86,21 +94,32 @@ export const updateCartItemQuantity =
     dispatch(setCarts(updatedCartItems));
     saveCartToLocalStorage(updatedCartItems);
 
-    // Recalculate pricing
-    const { isPromoApplied } = getState().cartInfo;
-    const pricing = calculatePricing(updatedCartItems, isPromoApplied);
+    // Recalculate pricing with current coupon data
+    const { isPromoApplied, appliedCoupon } = getState().cartInfo;
+    const pricing = calculatePricing(
+      updatedCartItems,
+      isPromoApplied,
+      appliedCoupon
+    );
     dispatch(updatePricing(pricing));
   };
 
-// Calculate pricing based on cart items and promo status
-const calculatePricing = (cartItems, isPromoApplied) => {
+// Calculate pricing based on cart items and coupon data
+const calculatePricing = (cartItems, isPromoApplied, appliedCoupon = null) => {
   const subtotal = cartItems.reduce(
     (sum, item) => sum + (item.discountPrice || item.price) * item.quantity,
     0
   );
-  const discount = isPromoApplied ? subtotal * 0.1 : 0;
+
+  let discount = 0;
+
+  if (isPromoApplied && appliedCoupon) {
+    // Value is always a percentage (0-100)
+    discount = subtotal * (appliedCoupon.value / 100);
+  }
+
   const shipping = subtotal > 80 ? 0 : 7.99;
-  const total = subtotal - discount + shipping;
+  const total = Math.max(0, subtotal - discount + shipping); // Ensure total is not negative
 
   return { subtotal, discount, shipping, total };
 };
@@ -110,15 +129,74 @@ export const fetchCartFromStorage = () => (dispatch, getState) => {
   const cartItems = getCartFromLocalStorage();
   dispatch(setCarts(cartItems));
 
-  // Calculate and update pricing
-  const { isPromoApplied } = getState().cartInfo;
-  const pricing = calculatePricing(cartItems, isPromoApplied);
+  // Calculate and update pricing with current coupon data
+  const { isPromoApplied, appliedCoupon } = getState().cartInfo;
+  const pricing = calculatePricing(cartItems, isPromoApplied, appliedCoupon);
   dispatch(updatePricing(pricing));
 };
 
-//This is for claer the cart
+//This is for clear the cart
 export const clearCart = () => (dispatch) => {
   dispatch(setCarts([]));
   saveCartToLocalStorage([]);
   dispatch(updatePricing({ subtotal: 0, discount: 0, shipping: 0, total: 0 }));
+  // Clear any applied coupons when cart is cleared
+  dispatch(
+    setPromoApplied({
+      isPromoApplied: false,
+      promoCode: "",
+      appliedCoupon: null,
+    })
+  );
+};
+
+// Apply promo code with backend validation
+export const handleApplyPromo = async (promoCode, dispatch) => {
+  try {
+    const response = await checkCoupon({ code: promoCode.trim() });
+
+    if (response.status === "success") {
+      dispatch(
+        setPromoApplied({
+          isPromoApplied: true,
+          promoCode: response.payload.code,
+          appliedCoupon: response.payload,
+        })
+      );
+
+      toast.success(`Promo code applied! ${response.payload.value}% off`);
+    }
+
+    // Recalculate pricing with the new coupon
+    dispatch(updatePricingOnPromoChange());
+  } catch (error) {
+    dispatch(
+      setPromoApplied({
+        isPromoApplied: false,
+        promoCode: "",
+        appliedCoupon: null,
+      })
+    );
+    if (error.response?.status === 404) {
+      toast.error(error.response.data.message);
+    }
+  }
+};
+
+// Remove applied coupon
+export const removeCoupon = () => (dispatch, getState) => {
+  dispatch(
+    setPromoApplied({
+      isPromoApplied: false,
+      promoCode: "",
+      appliedCoupon: null,
+    })
+  );
+
+  // Recalculate pricing without coupon
+  const { cartItems } = getState().cartInfo;
+  const pricing = calculatePricing(cartItems, false, null);
+  dispatch(updatePricing(pricing));
+
+  toast.success("Coupon removed");
 };

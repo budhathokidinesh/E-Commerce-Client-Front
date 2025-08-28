@@ -8,14 +8,13 @@ export const HomePage = () => {
     <div className="min-h-screen bg-white">
       <CustomCarousel />
 
-      <div className="mb-10">
-     
+      <div className="mb-10 sm:mx-0 lg:mx-12">
         <LatestProducts />
         <Separator />
       </div>
 
-      <div className="mb-10">
-       <RecommendationProducts />
+      <div className="mb-10 sm:mx-0 lg:mx-12">
+        <RecommendationProducts />
       </div>
     </div>
   );

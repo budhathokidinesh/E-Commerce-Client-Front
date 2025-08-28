@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Minus, Plus, Trash2, ShoppingBag, Heart } from "lucide-react";
+import { useEffect } from "react";
+import { Minus, Plus, Trash2, ShoppingBag, Heart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -9,8 +9,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   deleteCartItem,
   fetchCartFromStorage,
+  handleApplyPromo,
   updateCartItemQuantity,
-  updatePricingOnPromoChange,
 } from "../../features/cart/cartAction";
 import { setPromoApplied } from "../../features/cart/cartSlice";
 
@@ -21,15 +21,15 @@ const CartPage = () => {
   const {
     cartItems,
     isPromoApplied,
+    appliedCoupon,
     promoCode,
     subtotal,
-    discount,
     shipping,
     total,
+    couponLoading,
   } = useSelector((state) => state.cartInfo);
 
   const { user } = useSelector((state) => state.user);
-  console.log("user", user);
 
   // Load cart items from localStorage on component mount
   useEffect(() => {
@@ -48,6 +48,7 @@ const CartPage = () => {
     dispatch(updateCartItemQuantity(itemId, newQuantity));
   };
 
+  // check if cart is empty
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-white">
@@ -158,7 +159,7 @@ const CartPage = () => {
                           </Button>
                         </div>
                       </div>
-                      {/* delete & wishlist button and price - stack on mobile, row on desktop */}
+                      {/* delete & wishlist button and price */}
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
                         <div className="flex items-center gap-3 order-2 sm:order-1">
                           <Button
@@ -220,10 +221,18 @@ const CartPage = () => {
                 </div>
 
                 {isPromoApplied && (
-                  <div className="flex justify-between text-base">
-                    <span className="text-gray-600">Discount (NIKE10)</span>
+                  <div className="flex justify-between text-base items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">
+                        Discount ({promoCode})
+                      </span>
+                    </div>
                     <span className="text-green-600">
-                      -${discount.toFixed(2)}
+                      -$
+                      {(
+                        (Number(appliedCoupon?.value) / 100) *
+                        subtotal
+                      ).toFixed(2)}
                     </span>
                   </div>
                 )}
@@ -249,49 +258,49 @@ const CartPage = () => {
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <p className="text-sm text-gray-700">
                     <span className="font-medium">Free delivery</span> on orders
-                    over $150.00
+                    over $80.00
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Add ${(150 - subtotal).toFixed(2)} to qualify
+                    Add ${(80 - subtotal).toFixed(2)} to qualify
                   </p>
                 </div>
               )}
 
+              {/* Promo Code Section */}
               <div className="space-y-4 mb-8">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Promo Code"
-                    value={promoCode}
-                    onChange={(e) =>
-                      dispatch(
-                        setPromoApplied({
-                          isPromoApplied,
-                          promoCode: e.target.value,
-                        })
-                      )
-                    }
-                    className="flex-1 border-gray-200 focus:border-black"
-                  />
-                  <Button
-                    variant="outline"
-                    className="border-gray-200 hover:border-black bg-transparent"
-                    onClick={() => {
-                      if (promoCode.trim()) {
-                        dispatch(
-                          setPromoApplied({ isPromoApplied: true, promoCode })
-                        );
-                        dispatch(updatePricingOnPromoChange());
-                        toast.success("Promo code applied successfully!");
-                      }
-                    }}
-                  >
-                    Apply
-                  </Button>
-                </div>
-                {isPromoApplied && (
+                {isPromoApplied ? (
                   <p className="text-sm text-green-600">
                     Promo code applied successfully!
                   </p>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Promo Code"
+                      value={promoCode}
+                      onChange={(e) =>
+                        dispatch(
+                          setPromoApplied({
+                            isPromoApplied,
+                            promoCode: e.target.value,
+                          })
+                        )
+                      }
+                      className="flex-1 border-gray-200 focus:border-black"
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") {
+                          () => handleApplyPromo(promoCode, dispatch);
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      className="border-gray-200 hover:border-black bg-transparent"
+                      onClick={() => handleApplyPromo(promoCode, dispatch)}
+                      disabled={!promoCode.trim() || couponLoading}
+                    >
+                      {couponLoading ? "Applying..." : "Apply"}
+                    </Button>
+                  </div>
                 )}
               </div>
 

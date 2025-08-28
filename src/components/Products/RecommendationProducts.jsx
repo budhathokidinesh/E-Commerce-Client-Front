@@ -50,7 +50,7 @@ const RecommendationProducts = () => {
         Recommended Products
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {recomedateProducts?.map((product) => {
           const discountPercentage = calculateDiscountPercentage(
             product.price,

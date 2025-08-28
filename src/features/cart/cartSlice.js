@@ -4,6 +4,8 @@ const initialState = {
   cartItems: [],
   isPromoApplied: false,
   promoCode: "",
+  appliedCoupon: null,
+  couponLoading: false,
   subtotal: 0,
   discount: 0,
   shipping: 0,
@@ -33,6 +35,11 @@ const cartSlice = createSlice({
     setPromoApplied: (state, action) => {
       state.isPromoApplied = action.payload.isPromoApplied;
       state.promoCode = action.payload.promoCode;
+      state.appliedCoupon = action.payload.appliedCoupon || null;
+    },
+
+    setCouponLoading: (state, action) => {
+      state.couponLoading = action.payload;
     },
     updatePricing: (state, action) => {
       const { subtotal, discount, shipping, total } = action.payload;
@@ -52,6 +59,7 @@ export const {
   updateCartItemQuantity,
   setPromoApplied,
   updatePricing,
+  setCouponLoading,
 } = actions;
 
 export default cartReducer;
